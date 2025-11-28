@@ -1,285 +1,420 @@
-<!-- public/exam.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>Examen con verificación facial</title>
+
+  <!-- Fuentes y Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#3b82f6", // blue-500
+            "background-light": "#f8fafc", // slate-50
+            "background-dark": "#0f172a", // slate-900
+          },
+          fontFamily: {
+            display: ["Inter", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem", // lg
+          },
+        },
+      },
+    };
+  </script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
-    #video, #snapshot { max-width: 100%; border: 1px solid #ccc; }
-    .hidden { display: none; }
-    .status { margin: 10px 0; padding: 8px; border-radius: 4px; }
-    .status.ok { background: #d7ffd7; }
-    .status.error { background: #ffd7d7; }
-    .status.info { background: #d7e7ff; }
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
   </style>
 </head>
-<body>
-  <h1>Examen</h1>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-4xl p-4 sm:p-8">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8 space-y-8">
+        <!-- Encabezado común -->
+        <header class="text-center border-b border-slate-200 dark:border-slate-700 pb-4">
+          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-1">
+            Examen
+          </h1>
+          <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+            Sistema de verificación facial y código de clase
+          </p>
+        </header>
 
-  <!-- Paso 1: ingresar código de clase -->
-  <div id="code-section">
-    <h2>Ingresa el código de la clase</h2>
-    <input id="classCodeInput" placeholder="Ej: 483921" />
-    <button id="btnValidateCode">Validar código</button>
-    <div id="codeStatus" class="status info">
-      Esperando código de la clase.
+        <!-- PASO 1: Ingresar código de la clase -->
+        <section id="code-section">
+          <div class="text-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+              Ingresa el código de la clase
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              El docente te proporcionará un código tipo Kahoot.
+            </p>
+          </div>
+
+          <div class="mt-6 space-y-6">
+            <form class="space-y-4" onsubmit="return false;">
+              <div>
+                <label class="sr-only" for="classCodeInput">Código de la clase</label>
+                <div class="relative">
+                  <span
+                    class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+                    numbers
+                  </span>
+                  <input
+                    id="classCodeInput"
+                    name="class-code"
+                    type="text"
+                    required
+                    placeholder="Ej: 483921"
+                    class="w-full pl-10 pr-4 py-3 rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <div>
+                <button
+                  id="btnValidateCode"
+                  type="button"
+                  class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark transition-colors duration-200">
+                  Validar código
+                </button>
+              </div>
+            </form>
+            <div
+              id="codeStatus"
+              class="bg-blue-100 dark:bg-blue-900/40 border-l-4 border-blue-500 text-blue-800 dark:text-blue-200 p-4 rounded-r-lg text-sm"
+              role="alert">
+              Esperando código de la clase.
+            </div>
+          </div>
+        </section>
+
+        <!-- PASO 2: Verificación facial -->
+        <section id="login-section" class="hidden space-y-4">
+          <div class="flex flex-col md:flex-row gap-6 items-start">
+            <div class="flex-1 space-y-3">
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                Verificación de identidad
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Permite el acceso a la cámara, colócate centrado y toma una foto para validar tu identidad.
+              </p>
+              <div
+                id="loginStatus"
+                class="text-sm bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2">
+                Debes permitir acceso a la cámara.
+              </div>
+              <button
+                id="btnCapture"
+                type="button"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark">
+                <span class="material-icons-outlined text-base">photo_camera</span>
+                Tomar foto y verificar
+              </button>
+            </div>
+            <div class="flex-1">
+              <div class="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                <video id="video" autoplay playsinline class="w-full aspect-video bg-black/80"></video>
+                <canvas id="canvas" class="hidden"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PASO 3: Examen -->
+        <section id="exam-section" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                Bienvenido, <span id="studentName" class="font-bold"></span>
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Examen: <span id="examTitleSpan" class="font-medium"></span>
+              </p>
+            </div>
+          </div>
+
+          <form id="examForm" class="space-y-4">
+            <div id="questionsContainer" class="space-y-4">
+              <!-- Preguntas dinámicas -->
+            </div>
+            <button
+              type="submit"
+              class="inline-flex items-center px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark">
+              Enviar examen
+            </button>
+          </form>
+
+          <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+              Verificación de asistencia en vivo
+            </h3>
+            <div
+              id="attendanceStatus"
+              class="text-sm bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2">
+              Esperando que el docente solicite verificación...
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 
-  <!-- Paso 2: verificación facial -->
-  <div id="login-section" class="hidden">
-    <h2>Verificación de identidad</h2>
-    <video id="video" autoplay playsinline></video>
-    <canvas id="canvas" class="hidden"></canvas>
-    <button id="btnCapture">Tomar foto y verificar</button>
-    <div id="loginStatus" class="status info">Debes permitir acceso a la cámara.</div>
-  </div>
+  <script>
+    // Referencias a elementos
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const btnCapture = document.getElementById('btnCapture');
+    const loginStatus = document.getElementById('loginStatus');
+    const examSection = document.getElementById('exam-section');
+    const loginSection = document.getElementById('login-section');
+    const studentNameSpan = document.getElementById('studentName');
+    const attendanceStatus = document.getElementById('attendanceStatus');
 
-  <!-- Paso 3: examen -->
-    <!-- dentro del exam-section, reemplaza el form sencillo por esto: -->
-    <div id="exam-section" class="hidden">
-    <h2>Bienvenido, <span id="studentName"></span></h2>
-    <p>Examen: <span id="examTitleSpan"></span></p>
+    const codeSection = document.getElementById('code-section');
+    const classCodeInput = document.getElementById('classCodeInput');
+    const btnValidateCode = document.getElementById('btnValidateCode');
+    const codeStatus = document.getElementById('codeStatus');
 
-    <form id="examForm">
-        <div id="questionsContainer"></div>
-        <br/>
-        <button type="submit">Enviar examen</button>
-    </form>
+    const examTitleSpan = document.getElementById('examTitleSpan');
+    const questionsContainer = document.getElementById('questionsContainer');
+    const examForm = document.getElementById('examForm');
 
-    <h3>Verificación de asistencia</h3>
-    <div id="attendanceStatus" class="status info">
-        Esperando que el docente solicite verificación...
-    </div>
-    </div>
+    let classId = null;
+    let examId = null;
+    let examAttemptId = null;
+    let currentQuestions = [];
 
-  
-
-<script>
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const btnCapture = document.getElementById('btnCapture');
-  const loginStatus = document.getElementById('loginStatus');
-  const examSection = document.getElementById('exam-section');
-  const loginSection = document.getElementById('login-section');
-  const studentNameSpan = document.getElementById('studentName');
-  const attendanceStatus = document.getElementById('attendanceStatus');
-
-  const codeSection = document.getElementById('code-section');
-  const classCodeInput = document.getElementById('classCodeInput');
-  const btnValidateCode = document.getElementById('btnValidateCode');
-  const codeStatus = document.getElementById('codeStatus');
-
-  const examTitleSpan = document.getElementById('examTitleSpan');
-  const questionsContainer = document.getElementById('questionsContainer');
-  const examForm = document.getElementById('examForm');
-
-  let classId = null;
-  let examId = null;
-  let examAttemptId = null;
-  let currentQuestions = [];
-
-  async function initCamera() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-      loginStatus.textContent = 'Cámara lista. Toma una foto para verificar tu identidad.';
-    } catch (err) {
-      console.error(err);
-      loginStatus.textContent = 'No se pudo acceder a la cámara.';
-      loginStatus.className = 'status error';
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        loginStatus.textContent = 'Cámara lista. Toma una foto para verificar tu identidad.';
+      } catch (err) {
+        console.error(err);
+        loginStatus.textContent = 'No se pudo acceder a la cámara.';
+        loginStatus.className =
+          'text-sm bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2';
+      }
     }
-  }
 
-  function captureImageBase64() {
-    const width = video.videoWidth;
-    const height = video.videoHeight;
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, width, height);
-    const dataUrl = canvas.toDataURL('image/jpeg');
-    const base64 = dataUrl.split(',')[1];
-    return base64;
-  }
+    function captureImageBase64() {
+      const width = video.videoWidth || 640;
+      const height = video.videoHeight || 480;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      const base64 = dataUrl.split(',')[1];
+      return base64;
+    }
 
-  function renderQuestions(questions) {
-    questionsContainer.innerHTML = '';
-    questions.forEach((q, index) => {
-      const div = document.createElement('div');
-      div.style.marginBottom = '15px';
+    function setCodeStatus(message, type) {
+      codeStatus.textContent = message;
+      if (type === 'error') {
+        codeStatus.className =
+          'bg-red-100 dark:bg-red-900/40 border-l-4 border-red-500 text-red-800 dark:text-red-200 p-4 rounded-r-lg text-sm';
+      } else if (type === 'ok') {
+        codeStatus.className =
+          'bg-green-100 dark:bg-green-900/40 border-l-4 border-green-500 text-green-800 dark:text-green-200 p-4 rounded-r-lg text-sm';
+      } else {
+        codeStatus.className =
+          'bg-blue-100 dark:bg-blue-900/40 border-l-4 border-blue-500 text-blue-800 dark:text-blue-200 p-4 rounded-r-lg text-sm';
+      }
+    }
 
-      const title = document.createElement('h4');
-      title.textContent = `${index + 1}. ${q.text}`;
-      div.appendChild(title);
+    function renderQuestions(questions) {
+      questionsContainer.innerHTML = '';
+      questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.className =
+          'rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3';
 
-      q.options.forEach(opt => {
-        const label = document.createElement('label');
-        label.style.display = 'block';
+        const title = document.createElement('h4');
+        title.className = 'font-semibold text-sm text-gray-900 dark:text-white mb-2';
+        title.textContent = `${index + 1}. ${q.text}`;
+        div.appendChild(title);
 
-        const radio = document.createElement('input');
-        radio.type = 'radio';
-        radio.name = `question_${q.id}`;
-        radio.value = opt.id;
+        q.options.forEach((opt) => {
+          const label = document.createElement('label');
+          label.className = 'flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 mb-1';
 
-        label.appendChild(radio);
-        label.appendChild(document.createTextNode(' ' + opt.text));
-        div.appendChild(label);
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `question_${q.id}`;
+          radio.value = opt.id;
+          radio.className = 'text-primary border-gray-300 focus:ring-primary';
+
+          label.appendChild(radio);
+          label.appendChild(document.createTextNode(opt.text));
+          div.appendChild(label);
+        });
+
+        questionsContainer.appendChild(div);
       });
-
-      questionsContainer.appendChild(div);
-    });
-  }
-
-  btnValidateCode.addEventListener('click', async () => {
-    const code = classCodeInput.value.trim();
-    if (!code) {
-      codeStatus.textContent = 'Ingresa un código.';
-      codeStatus.className = 'status error';
-      return;
     }
-    codeStatus.textContent = 'Validando código...';
-    codeStatus.className = 'status info';
-    try {
-      const resp = await fetch(`/api/exam-sessions/by-code/${code}`);
-      const data = await resp.json();
-      if (!data.exists) {
-        codeStatus.textContent = data.error || 'Código no válido o examen no encontrado.';
-        codeStatus.className = 'status error';
+
+    // Validar código de examen (carga examen + clase)
+    btnValidateCode.addEventListener('click', async () => {
+      const code = classCodeInput.value.trim();
+      if (!code) {
+        setCodeStatus('Ingresa un código.', 'error');
         return;
       }
-      classId = data.classId;
-      examId = data.exam.id;
-      currentQuestions = data.exam.questions;
+      setCodeStatus('Validando código...', 'info');
+      try {
+        const resp = await fetch(`/api/exam-sessions/by-code/${code}`);
+        const data = await resp.json();
+        if (!data.exists) {
+          setCodeStatus(data.error || 'Código no válido o examen no encontrado.', 'error');
+          return;
+        }
 
-      codeStatus.textContent =
-        `Clase: ${data.className} | Examen: ${data.exam.title}`;
-      codeStatus.className = 'status ok';
+        classId = data.classId;
+        examId = data.exam.id;
+        currentQuestions = data.exam.questions || [];
 
-      // Renderizar preguntas (pero aún no mostramos examen hasta cara verificada)
-      renderQuestions(currentQuestions);
-      examTitleSpan.textContent = data.exam.title;
+        renderQuestions(currentQuestions);
+        examTitleSpan.textContent = data.exam.title;
+        setCodeStatus(`Clase: ${data.className} | Examen: ${data.exam.title}`, 'ok');
 
-      // Mostrar sección de verificación facial
-      codeSection.classList.add('hidden');
-      loginSection.classList.remove('hidden');
-      initCamera();
-      pollAttendanceCheck(); // comenzar a escuchar verificaciones
-    } catch (err) {
-      console.error(err);
-      codeStatus.textContent = 'Error de red al validar código.';
-      codeStatus.className = 'status error';
-    }
-  });
-
-  btnCapture.addEventListener('click', async () => {
-    if (!classId) {
-      loginStatus.textContent = 'No hay clase asociada. Primero valida un código.';
-      loginStatus.className = 'status error';
-      return;
-    }
-
-    loginStatus.textContent = 'Verificando rostro...';
-    loginStatus.className = 'status info';
-
-    const imageBase64 = captureImageBase64();
-    try {
-      const resp = await fetch('/api/face-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64, classId })
-      });
-      const data = await resp.json();
-      if (!resp.ok || !data.success) {
-        loginStatus.textContent = data.error || 'No se pudo verificar.';
-        loginStatus.className = 'status error';
-        return;
+        // Pasar a verificación facial
+        codeSection.classList.add('hidden');
+        loginSection.classList.remove('hidden');
+        initCamera();
+        pollAttendanceCheck(); // comenzar a escuchar verificaciones
+      } catch (err) {
+        console.error(err);
+        setCodeStatus('Error de red al validar código.', 'error');
       }
-
-      examAttemptId = data.examAttemptId;
-      studentNameSpan.textContent = data.studentName;
-      loginStatus.textContent = `Verificación ${data.status} (score: ${data.similarity.toFixed(3)})`;
-      loginStatus.className = 'status ok';
-
-      loginSection.classList.add('hidden');
-      examSection.classList.remove('hidden');
-
-    } catch (err) {
-      console.error(err);
-      loginStatus.textContent = 'Error en la comunicación con el servidor.';
-      loginStatus.className = 'status error';
-    }
-  });
-
-  examForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!examAttemptId || !examId) {
-      alert('No hay intento de examen o examId, algo salió mal.');
-      return;
-    }
-
-    const answers = currentQuestions.map(q => {
-      const selected = document.querySelector(`input[name="question_${q.id}"]:checked`);
-      return {
-        questionId: q.id,
-        optionId: selected ? Number(selected.value) : null
-      };
     });
 
-    try {
-      const resp = await fetch(`/api/exam-sessions/${examId}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ examAttemptId, answers })
-      });
-      const data = await resp.json();
-      if (!resp.ok || !data.success) {
-        alert(data.error || 'Error al guardar el examen.');
+    // Verificación facial inicial
+    btnCapture.addEventListener('click', async () => {
+      if (!classId) {
+        loginStatus.textContent = 'No hay clase asociada. Primero valida un código.';
+        loginStatus.className =
+          'text-sm bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2';
         return;
       }
-      alert('Examen enviado correctamente (MVP).');
-    } catch (err) {
-      console.error(err);
-      alert('Error de red al enviar el examen.');
-    }
-  });
 
-  async function pollAttendanceCheck() {
-    if (!classId) {
-      setTimeout(pollAttendanceCheck, 5000);
-      return;
-    }
-    try {
-      const resp = await fetch(`/api/classes/${classId}/attendance-checks/active`);
-      const data = await resp.json();
-      if (data.hasActive) {
-        attendanceStatus.textContent = 'El docente solicitó verificación. Tomando foto...';
-        attendanceStatus.className = 'status info';
+      loginStatus.textContent = 'Verificando rostro...';
+      loginStatus.className =
+        'text-sm bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2';
 
-        const imageBase64 = captureImageBase64();
-        const resp2 = await fetch(`/api/attendance-checks/${data.checkId}/respond`, {
+      const imageBase64 = captureImageBase64();
+      try {
+        const resp = await fetch('/api/face-login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imageBase64, classId })
+          body: JSON.stringify({ imageBase64, classId }),
         });
-        const data2 = await resp2.json();
-        if (!resp2.ok || !data2.success) {
-          attendanceStatus.textContent = data2.error || 'Error en verificación de asistencia.';
-          attendanceStatus.className = 'status error';
-        } else {
-          attendanceStatus.textContent =
-            `Asistencia registrada: ${data2.status} (score: ${data2.similarity.toFixed(3)})`;
-          attendanceStatus.className = 'status ok';
+        const data = await resp.json();
+        if (!resp.ok || !data.success) {
+          loginStatus.textContent = data.error || 'No se pudo verificar.';
+          loginStatus.className =
+            'text-sm bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2';
+          return;
         }
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setTimeout(pollAttendanceCheck, 5000);
-    }
-  }
-</script>
 
+        examAttemptId = data.examAttemptId;
+        studentNameSpan.textContent = data.studentName;
+        loginStatus.textContent = `Verificación ${data.status} (score: ${data.similarity.toFixed(3)})`;
+        loginStatus.className =
+          'text-sm bg-green-50 dark:bg-green-900/40 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2';
+
+        loginSection.classList.add('hidden');
+        examSection.classList.remove('hidden');
+      } catch (err) {
+        console.error(err);
+        loginStatus.textContent = 'Error en la comunicación con el servidor.';
+        loginStatus.className =
+          'text-sm bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2';
+      }
+    });
+
+    // Enviar examen
+    examForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!examAttemptId || !examId) {
+        alert('No hay intento de examen o examId, algo salió mal.');
+        return;
+      }
+
+      const answers = currentQuestions.map((q) => {
+        const selected = document.querySelector(`input[name="question_${q.id}"]:checked`);
+        return {
+          questionId: q.id,
+          optionId: selected ? Number(selected.value) : null,
+        };
+      });
+
+      try {
+        const resp = await fetch(`/api/exam-sessions/${examId}/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ examAttemptId, answers }),
+        });
+        const data = await resp.json();
+        if (!resp.ok || !data.success) {
+          alert(data.error || 'Error al guardar el examen.');
+          return;
+        }
+        alert('Examen enviado correctamente (MVP).');
+      } catch (err) {
+        console.error(err);
+        alert('Error de red al enviar el examen.');
+      }
+    });
+
+    // Polling de verificación de asistencia
+    async function pollAttendanceCheck() {
+      if (!classId) {
+        setTimeout(pollAttendanceCheck, 5000);
+        return;
+      }
+      try {
+        const resp = await fetch(`/api/classes/${classId}/attendance-checks/active`);
+        const data = await resp.json();
+        if (data.hasActive) {
+          attendanceStatus.textContent = 'El docente solicitó verificación. Tomando foto...';
+          attendanceStatus.className =
+            'text-sm bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-lg px-3 py-2';
+
+          const imageBase64 = captureImageBase64();
+          const resp2 = await fetch(`/api/attendance-checks/${data.checkId}/respond`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageBase64, classId }),
+          });
+          const data2 = await resp2.json();
+          if (!resp2.ok || !data2.success) {
+            attendanceStatus.textContent = data2.error || 'Error en verificación de asistencia.';
+            attendanceStatus.className =
+              'text-sm bg-red-50 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-lg px-3 py-2';
+          } else {
+            attendanceStatus.textContent =
+              `Asistencia registrada: ${data2.status} (score: ${data2.similarity.toFixed(3)})`;
+            attendanceStatus.className =
+              'text-sm bg-green-50 dark:bg-green-900/40 border border-green-200 dark:border-green-800 rounded-lg px-3 py-2';
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setTimeout(pollAttendanceCheck, 5000);
+      }
+    }
+  </script>
 </body>
 </html>

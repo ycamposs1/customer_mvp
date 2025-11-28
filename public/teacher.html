@@ -1,34 +1,102 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="light" lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Panel docente</title>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Teacher Panel</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
-    .status { margin: 10px 0; padding: 8px; border-radius: 4px; }
-    .status.ok { background: #d7ffd7; }
-    .status.error { background: #ffd7d7; }
-    pre, textarea { width: 100%; }
-    textarea { height: 200px; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
   </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#137fec",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Lexend", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
 </head>
-<body>
-  <h1>Panel docente</h1>
+<body class="font-display bg-background-light dark:bg-background-dark text-[#0d141b] dark:text-slate-200">
+<div class="relative flex min-h-screen w-full flex-col">
+  <div class="flex h-full grow flex-col p-4 sm:p-6 md:p-8">
+    <header class="mb-8 w-full max-w-7xl mx-auto">
+      <div class="flex flex-wrap justify-between gap-3">
+        <div class="flex flex-col gap-1">
+          <h1 class="text-4xl font-black leading-tight tracking-[-0.033em] text-[#0d141b] dark:text-white">
+            Dashboard
+          </h1>
+          <p class="text-base font-normal leading-normal text-[#4c739a] dark:text-slate-400">
+            Crear codigo, marca asistencia y genera reportes en un mismo lugar.
+          </p>
+        </div>
+      </div>
+    </header>
 
-  <h2>1. Crear examen y generar código</h2>
-  <label>Nombre de la clase:
-    <input id="className" placeholder="Ej: IA - Sesión 1" style="width: 100%;" />
-  </label>
-  <br/><br/>
-  <label>Título del examen:
-    <input id="examTitle" placeholder="Parcial 1" style="width: 100%;" />
-  </label>
-  <br/><br/>
-  <label>Preguntas (formato JSON sencillo):</label>
-  <textarea id="questionsJson"></textarea>
-  <small>
-    Ejemplo:
-    <pre>[
+    <main class="flex-1">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8 w-full max-w-7xl mx-auto">
+        <!-- Card 1: Create Exam -->
+        <div class="flex flex-col gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark p-6 shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-2xl">assignment</span>
+            <h2 class="text-xl font-bold leading-tight tracking-[-0.015em] text-[#0d141b] dark:text-white">
+              Crear Examen y Generar Código
+            </h2>
+          </div>
+          <div class="flex flex-col gap-4">
+            <label class="flex flex-col w-full">
+              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">Nombre del Curso</p>
+              <input
+                id="className"
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 h-12 p-3 text-base font-normal leading-normal"
+                placeholder="e.g., Matemáticas 101"
+              />
+            </label>
+
+            <label class="flex flex-col w-full">
+              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">Titulo de Examen</p>
+              <input
+                id="examTitle"
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 h-12 p-3 text-base font-normal leading-normal"
+                placeholder="e.g., Examen Parcial 1"
+              />
+            </label>
+
+            <label class="flex flex-col w-full">
+              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">
+                Preguntas <span class="text-xs text-[#4c739a] dark:text-slate-400">(JSON)</span>
+              </p>
+              <textarea
+                id="questionsJson"
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 min-h-36 p-3 text-xs font-mono leading-normal"
+                placeholder='Coloca aquí el JSON de tus preguntas...'
+              ></textarea>
+            </label>
+
+            <!-- Ejemplo JSON (colapsable) -->
+            <div id="jsonExample" class="hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 p-3">
+              <p class="text-sm font-medium mb-2 text-[#0d141b] dark:text-slate-200">Ejemplo JSON:</p>
+              <pre class="text-xs text-[#4c739a] dark:text-slate-300 overflow-auto">
+[
   {
     "text": "¿Capital de Perú?",
     "options": [
@@ -45,117 +113,227 @@
     ]
   }
 ]</pre>
-  </small>
-  <button id="btnGenerateCode">Crear examen y generar código</button>
-  <div id="codeInfo" class="status"></div>
+            </div>
 
-  <h2>2. Verificación de asistencia</h2>
-  <label>Nombre docente:
-    <input id="teacherName" value="Docente Demo" />
-  </label>
-  <button id="btnCheck">Verificar asistencia ahora</button>
-  <div id="checkStatus" class="status"></div>
+            <div class="flex flex-col mt-2 gap-3">
+              <button
+                id="btnGenerateCode"
+                class="flex items-center justify-center gap-2 w-full h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-background-dark transition-colors">
+                Generar Código
+              </button>
 
-  <h2>3. Reporte de la clase</h2>
-  <button id="btnReport">Obtener reporte</button>
-  <pre id="reportOutput"></pre>
+              <!-- Barra de estado + botón de ejemplo JSON -->
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between rounded-lg bg-background-light dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 h-12">
+                  <p id="codeInfo" class="text-sm text-[#4c739a] dark:text-slate-400 truncate">
+                    Aún no se ha generado un código.
+                  </p>
+                </div>
+                <button
+                  id="btnShowExample"
+                  class="flex items-center justify-center gap-2 w-full h-10 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-medium text-[#0d141b] dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <span class="material-symbols-outlined text-base">code</span>
+                  Ver ejemplo JSON
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <script>
-    const classNameInput = document.getElementById('className');
-    const examTitleInput = document.getElementById('examTitle');
-    const questionsJsonInput = document.getElementById('questionsJson');
-    const codeInfo = document.getElementById('codeInfo');
-    const teacherNameInput = document.getElementById('teacherName');
-    const checkStatus = document.getElementById('checkStatus');
-    const reportOutput = document.getElementById('reportOutput');
+        <!-- Card 2: Attendance Verification -->
+        <div class="flex flex-col gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark p-6 shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-2xl">how_to_reg</span>
+            <h2 class="text-xl font-bold leading-tight tracking-[-0.015em] text-[#0d141b] dark:text-white">
+              Verificación de Asistencia
+            </h2>
+          </div>
+          <div class="flex flex-col gap-4">
+            <label class="flex flex-col w-full">
+              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">Nombre de profesor</p>
+              <input
+                id="teacherName"
+                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 h-12 p-3 text-base font-normal leading-normal"
+                placeholder="e.g., Prof. Rodriguez"
+                value="Docente Demo"
+              />
+            </label>
+            <button
+              id="btnCheck"
+              class="flex items-center justify-center gap-2 w-full h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-background-dark transition-colors mt-2">
+              Verificar
+            </button>
+            <div
+              id="checkStatus"
+              class="flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 text-sm text-[#4c739a] dark:text-slate-300 border border-dashed border-slate-300 dark:border-slate-600">
+              <span class="material-symbols-outlined text-lg text-slate-400">info</span>
+              <p class="font-medium">Aún no se ha iniciado una verificación de asistencia.</p>
+            </div>
+          </div>
+        </div>
 
-    let currentClassId = null;
-    let currentCode = null;
+        <!-- Card 3: Class Report -->
+        <div class="flex flex-col gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark p-6 shadow-sm">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary text-2xl">summarize</span>
+            <h2 class="text-xl font-bold leading-tight tracking-[-0.015em] text-[#0d141b] dark:text-white">
+              Reporte de la Clase
+            </h2>
+          </div>
+          <div class="flex flex-col gap-4 flex-grow">
+            <button
+              id="btnReport"
+              class="flex items-center justify-center gap-2 w-full h-12 px-6 rounded-lg bg-primary text-white font-bold text-base hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-background-dark transition-colors">
+              Obtener Reporte
+            </button>
+            <div class="flex flex-col flex-grow min-h-[200px] h-full">
+              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">Reporte:</p>
+              <div
+                id="reportOutput"
+                class="flex-grow p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#4c739a] dark:text-slate-400 text-xs overflow-auto whitespace-pre-wrap">
+                tu reporte sera mostrado una vez se haya geenrado.
+              </div>
+            </div>
+          </div>
+        </div>
 
-    document.getElementById('btnGenerateCode').addEventListener('click', async () => {
-      const name = classNameInput.value.trim();
-      const examTitle = examTitleInput.value.trim();
-      const questionsJson = questionsJsonInput.value.trim();
+      </div>
+    </main>
+  </div>
+</div>
 
-      if (!examTitle || !questionsJson) {
-        codeInfo.textContent = 'Debes ingresar título del examen y preguntas en JSON.';
-        codeInfo.className = 'status error';
+<script>
+  // Referencias a elementos
+  const classNameInput = document.getElementById('className');
+  const examTitleInput = document.getElementById('examTitle');
+  const questionsJsonInput = document.getElementById('questionsJson');
+  const codeInfo = document.getElementById('codeInfo');
+  const btnGenerateCode = document.getElementById('btnGenerateCode');
+
+  const btnShowExample = document.getElementById('btnShowExample');
+  const jsonExample = document.getElementById('jsonExample');
+
+  const teacherNameInput = document.getElementById('teacherName');
+  const btnCheck = document.getElementById('btnCheck');
+  const checkStatus = document.getElementById('checkStatus');
+
+  const btnReport = document.getElementById('btnReport');
+  const reportOutput = document.getElementById('reportOutput');
+
+  let currentClassId = null;
+  let currentCode = null;
+
+  // Botón: Ver ejemplo JSON (toggle)
+  btnShowExample.addEventListener('click', () => {
+    const isHidden = jsonExample.classList.contains('hidden');
+    if (isHidden) {
+      jsonExample.classList.remove('hidden');
+      btnShowExample.textContent = 'Ocultar ejemplo JSON';
+    } else {
+      jsonExample.classList.add('hidden');
+      btnShowExample.innerHTML = '<span class="material-symbols-outlined text-base">code</span> Ver ejemplo JSON';
+    }
+  });
+
+  // Generar examen + código (llama a /api/exams/create-session)
+  btnGenerateCode.addEventListener('click', async () => {
+    const name = classNameInput.value.trim();
+    const examTitle = examTitleInput.value.trim();
+    const questionsJson = questionsJsonInput.value.trim();
+
+    if (!examTitle || !questionsJson) {
+      codeInfo.textContent = 'Debes ingresar título del examen y preguntas en JSON.';
+      codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
+      return;
+    }
+
+    try {
+      const resp = await fetch('/api/exams/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, examTitle, questionsJson })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        codeInfo.textContent = data.error || 'Error generando examen y código.';
+        codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
         return;
       }
 
-      try {
-        const resp = await fetch('/api/exams/create-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, examTitle, questionsJson })
-        });
-        const data = await resp.json();
-        if (!resp.ok || !data.success) {
-          codeInfo.textContent = data.error || 'Error generando examen y código.';
-          codeInfo.className = 'status error';
-          return;
-        }
-        currentClassId = data.classId;
-        currentCode = data.code;
+      currentClassId = data.classId;
+      currentCode = data.code;
 
-        codeInfo.textContent =
-          `Examen creado: "${data.examTitle}" en la clase "${data.className}". ` +
-          `Código para los alumnos: ${data.code} (ID interno clase: ${data.classId})`;
-        codeInfo.className = 'status ok';
-      } catch (err) {
-        console.error(err);
-        codeInfo.textContent = 'Error de red.';
-        codeInfo.className = 'status error';
-      }
-    });
+      codeInfo.textContent =
+        `Examen: "${data.examTitle}" | Clase: "${data.className}" | Código: ${data.code} (ID clase: ${data.classId})`;
+      codeInfo.className = 'text-sm text-emerald-700 dark:text-emerald-300';
 
-    document.getElementById('btnCheck').addEventListener('click', async () => {
-      if (!currentClassId) {
-        checkStatus.textContent = 'Primero genera un examen y código.';
-        checkStatus.className = 'status error';
+    } catch (err) {
+      console.error(err);
+      codeInfo.textContent = 'Error de red.';
+      codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
+    }
+  });
+
+  // Verificación de asistencia (llama a /api/classes/:classId/attendance-checks)
+  btnCheck.addEventListener('click', async () => {
+    if (!currentClassId) {
+      checkStatus.innerHTML =
+        '<span class="material-symbols-outlined text-lg text-red-500">error</span><p class="text-sm font-medium">Primero genera un examen y código.</p>';
+      checkStatus.className =
+        'flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/40 text-sm text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800';
+      return;
+    }
+
+    const teacherName = teacherNameInput.value || 'docente';
+    try {
+      const resp = await fetch(`/api/classes/${currentClassId}/attendance-checks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teacherName })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        checkStatus.innerHTML =
+          `<span class="material-symbols-outlined text-lg text-red-500">error</span><p class="text-sm font-medium">${data.error || 'Error creando verificación.'}</p>`;
+        checkStatus.className =
+          'flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/40 text-sm text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800';
         return;
       }
-      const teacherName = teacherNameInput.value || 'docente';
-      try {
-        const resp = await fetch(`/api/classes/${currentClassId}/attendance-checks`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ teacherName })
-        });
-        const data = await resp.json();
-        if (!resp.ok || !data.success) {
-          checkStatus.textContent = data.error || 'Error creando verificación.';
-          checkStatus.className = 'status error';
-          return;
-        }
-        checkStatus.textContent =
-          `Verificación creada. ID: ${data.check.id}, expira en ${data.check.expires_at}`;
-        checkStatus.className = 'status ok';
-      } catch (err) {
-        console.error(err);
-        checkStatus.textContent = 'Error de red.';
-        checkStatus.className = 'status error';
-      }
-    });
 
-    document.getElementById('btnReport').addEventListener('click', async () => {
-      if (!currentClassId) {
-        reportOutput.textContent = 'Primero genera un examen y código.';
+      checkStatus.innerHTML =
+        `<span class="material-symbols-outlined text-lg text-emerald-500">check_circle</span>
+         <p class="text-sm font-medium">Verificación creada. ID: ${data.check.id}, expira en ${data.check.expires_at}</p>`;
+      checkStatus.className =
+        'flex items-center gap-2 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 text-sm text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
+
+    } catch (err) {
+      console.error(err);
+      checkStatus.innerHTML =
+        '<span class="material-symbols-outlined text-lg text-red-500">error</span><p class="text-sm font-medium">Error de red.</p>';
+      checkStatus.className =
+        'flex items-center gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/40 text-sm text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800';
+    }
+  });
+
+  // Reporte de la clase (llama a /api/classes/:classId/report)
+  btnReport.addEventListener('click', async () => {
+    if (!currentClassId) {
+      reportOutput.textContent = 'Primero genera un examen y código.';
+      return;
+    }
+    try {
+      const resp = await fetch(`/api/classes/${currentClassId}/report`);
+      const data = await resp.json();
+      if (!resp.ok) {
+        reportOutput.textContent = data.error || 'Error obteniendo reporte.';
         return;
       }
-      try {
-        const resp = await fetch(`/api/classes/${currentClassId}/report`);
-        const data = await resp.json();
-        if (!resp.ok) {
-          reportOutput.textContent = data.error || 'Error obteniendo reporte.';
-          return;
-        }
-        reportOutput.textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        console.error(err);
-        reportOutput.textContent = 'Error de red.';
-      }
-    });
-  </script>
+      reportOutput.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      console.error(err);
+      reportOutput.textContent = 'Error de red al obtener el reporte.';
+    }
+  });
+</script>
 </body>
 </html>
