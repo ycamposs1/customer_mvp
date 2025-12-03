@@ -5,3 +5,4 @@
 *.sqlite
 dv/schema.sql
 node_modules/
+face_exam.db
