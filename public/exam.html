@@ -390,7 +390,7 @@
           const resp2 = await fetch(`/api/attendance-checks/${data.checkId}/respond`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64, classId }),
+            body: JSON.stringify({ imageBase64, classId, examAttemptId }), // Enviamos examAttemptId
           });
           const data2 = await resp2.json();
           if (!resp2.ok || !data2.success) {

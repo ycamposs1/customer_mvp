@@ -51,10 +51,12 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
 CREATE TABLE IF NOT EXISTS attendance_checks (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   class_id INTEGER NOT NULL,
-  created_by TEXT NOT NULL,
+  exam_id INTEGER,
+  created_by INTEGER,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  expires_at DATETIME NOT NULL,
-  FOREIGN KEY (class_id) REFERENCES classes(id)
+  expires_at DATETIME,
+  FOREIGN KEY (class_id) REFERENCES classes(id),
+  FOREIGN KEY (exam_id) REFERENCES exams(id)
 );
 
 -- Respuestas de los alumnos a cada verificación

@@ -14,13 +14,13 @@ async function createExamAttempt({ classId, examId, studentId, score, status, cl
   return row;
 }
 
-async function createAttendanceCheck({ classId, createdBy, expiresAt }) {
+async function createAttendanceCheck({ classId, examId, createdBy, expiresAt }) {
   const result = await run(
     `
-    INSERT INTO attendance_checks (class_id, created_by, expires_at)
-    VALUES (?, ?, ?)
+    INSERT INTO attendance_checks (class_id, exam_id, created_by, expires_at)
+    VALUES (?, ?, ?, ?)
     `,
-    [classId, createdBy, expiresAt.toISOString()]
+    [classId, examId || null, createdBy, expiresAt.toISOString()]
   );
 
   const row = await get('SELECT * FROM attendance_checks WHERE id = ?', [result.lastID]);
@@ -115,11 +115,12 @@ async function getClassReport(classId, examId) {
     JOIN students s ON s.id = e.student_id
     LEFT JOIN exam_attempts ea ON ea.class_id = c.id AND ea.student_id = s.id AND ea.exam_id = ?
     LEFT JOIN attendance_responses ar ON ar.student_id = s.id
-    LEFT JOIN attendance_checks ac ON ac.id = ar.attendance_check_id
+    LEFT JOIN attendance_checks ac ON ac.id = ar.attendance_check_id AND ac.exam_id = ?
     WHERE c.id = ?
     ORDER BY s.full_name, ac.created_at
     `;
-    params.unshift(examId); // examId va primero en el params array por el orden de ?
+    params.unshift(examId); // examId para ac.exam_id
+    params.unshift(examId); // examId para ea.exam_id
   } else {
     sql += ` ORDER BY s.full_name, ac.created_at`;
   }
@@ -140,6 +141,7 @@ module.exports = {
   createAttendanceCheck,
   getLatestActiveCheckByClassId,
   createAttendanceResponse,
+  registerAttendanceResponse: createAttendanceResponse, // Alias
   getClassReport,
   updateExamAttemptScore
 };

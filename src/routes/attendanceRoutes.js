@@ -13,17 +13,15 @@ const attendanceRepo = require('../repositories/attendanceRepository');
 router.post('/classes/:classId/attendance-checks', async (req, res) => {
   try {
     const { classId } = req.params;
-    const { teacherName } = req.body;
+    const { examId } = req.body; // Nuevo: recibimos examId
 
-    const classData = await classRepo.findClassById(classId);
-    if (!classData) {
-      return res.status(404).json({ error: 'La clase no existe.' });
-    }
+    // Crear check que expira en 1 minuto
+    const expiresAt = new Date(Date.now() + 60000);
 
-    const expiresAt = new Date(Date.now() + 10 * 1000); // 10s
     const check = await attendanceRepo.createAttendanceCheck({
       classId,
-      createdBy: teacherName || 'docente',
+      examId,
+      createdBy: 'teacher', // MVP
       expiresAt
     });
 
@@ -59,55 +57,74 @@ router.get('/classes/:classId/attendance-checks/active', async (req, res) => {
 router.post('/attendance-checks/:checkId/respond', async (req, res) => {
   try {
     const { checkId } = req.params;
-    const { imageBase64, classId } = req.body;
+    const { imageBase64, classId, examAttemptId } = req.body; // Recibimos examAttemptId
 
-    const classData = await classRepo.findClassById(classId);
-    if (!classData) {
-      return res.status(404).json({ error: 'La clase no existe.' });
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'Imagen requerida.' });
     }
 
+    // 1. Llamar a CompreFace
     const recognition = await comprefaceService.recognizeFaceFromBase64(imageBase64);
+
+    let student = null;
+    let similarity = 0;
+    let status = 'fallido';
+
     if (!recognition) {
-      return res.status(401).json({ error: 'No se detectó rostro o no se reconoció el alumno.' });
+      // CASO: No se detectó rostro (cámara tapada o mala foto)
+      // Si tenemos examAttemptId, podemos saber quién es el alumno
+      if (examAttemptId) {
+        // Necesitamos buscar el student_id asociado al attempt
+        // (Esto requiere una query extra o asumir que el frontend dice la verdad, 
+        //  pero por seguridad deberíamos buscar el attempt en DB. 
+        //  Para MVP, asumimos que si el attempt existe, el student es válido).
+        // Haremos una query rápida para sacar el student_id del attempt.
+        const { get } = require('../db');
+        const attempt = await get('SELECT student_id FROM exam_attempts WHERE id = ?', [examAttemptId]);
+
+        if (attempt) {
+          // Encontramos al alumno, pero como no hubo rostro, lo marcamos bloqueado/no_face
+          student = { id: attempt.student_id };
+          status = 'bloqueado'; // o 'no_face'
+          similarity = 0;
+          console.log(`No face found for check ${checkId}, but identified student ${student.id} via attempt ${examAttemptId}. Marking as blocked.`);
+        } else {
+          return res.status(400).json({ error: 'No se detectó rostro y el intento de examen no es válido.' });
+        }
+      } else {
+        return res.status(400).json({ error: 'No se detectó rostro.' });
+      }
+    } else {
+      // CASO: Sí hubo reconocimiento
+      const { subject, similarity: sim } = recognition;
+      similarity = sim;
+
+      // Buscar alumno
+      student = await studentRepo.findByComprefaceSubject(subject);
+
+      if (!student) {
+        return res.status(404).json({ error: 'Estudiante no reconocido en el sistema.' });
+      }
+
+      if (similarity >= 0.8) status = 'ok';
+      else if (similarity >= 0.6) status = 'dudoso';
+      else status = 'bloqueado'; // Si es muy bajo, también bloqueado
     }
-    //similitud mayor al 80% es ok, mayor al 60% es dudoso, menor es fallido
-    const { subject, similarity, raw } = recognition;
-    const status = similarity >= 0.8 ? 'ok' : similarity >= 0.6 ? 'dudoso' : 'fallido';
 
-    let student = await studentRepo.findByComprefaceSubject(subject);
-    if (!student) {
-      student = await studentRepo.createStudent({
-        fullName: subject,
-        email: null,
-        comprefaceSubject: subject
-      });
-    }
-
-    await classRepo.enrollStudent({
-      classId,
-      studentId: student.id
-    });
-
-    const response = await attendanceRepo.createAttendanceResponse({
-      checkId,
+    // 2. Registrar respuesta
+    await attendanceRepo.registerAttendanceResponse({
+      checkId, // Corregido: el repo espera checkId, no attendanceCheckId
       studentId: student.id,
       score: similarity,
       status,
-      imagePath: null,
-      rawResult: raw
+      capturedAt: new Date()
     });
 
-    res.json({
-      success: true,
-      studentName: student.full_name,
-      similarity,
-      status,
-      responseId: response.id
-    });
+    res.json({ success: true, status, similarity });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Error registrando asistencia.' });
+    res.status(500).json({ error: 'Error respondiendo asistencia.' });
   }
 });
 

@@ -446,7 +446,7 @@
         const resp = await fetch(`/api/classes/${currentClassId}/attendance-checks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ teacherName })
+          body: JSON.stringify({ examId: currentExamId })
         });
         const data = await resp.json();
         if (!resp.ok || !data.success) {
