@@ -86,10 +86,18 @@ async function getClassReport(classId) {
   return rows;
 }
 
+async function updateExamAttemptScore(attemptId, score) {
+  await run(
+    `UPDATE exam_attempts SET exam_score = ? WHERE id = ?`,
+    [score, attemptId]
+  );
+}
+
 module.exports = {
   createExamAttempt,
   createAttendanceCheck,
   getLatestActiveCheckByClassId,
   createAttendanceResponse,
-  getClassReport
+  getClassReport,
+  updateExamAttemptScore
 };

@@ -3,7 +3,7 @@ const { createExamWithQuestions } = require('../repositories/examRepository');
 
 async function createExam(req, res) {
   try {
-    const { classId, title, questions } = req.body;
+    const { classId, title, questions, durationMinutes } = req.body;
 
     // Validaciones básicas
     if (!classId || !title || !Array.isArray(questions) || questions.length === 0) {
@@ -27,7 +27,7 @@ async function createExam(req, res) {
       }
     }
 
-    const exam = await createExamWithQuestions({ classId, title, questions });
+    const exam = await createExamWithQuestions({ classId, title, questions, durationMinutes });
     return res.status(201).json(exam);
   } catch (err) {
     console.error('Error creando examen:', err);

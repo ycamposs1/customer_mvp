@@ -13,11 +13,11 @@ const { get, all, run } = require('../db');
  *  ...
  * ]
  */
-async function createExamWithQuestions({ classId, title, questions }) {
+async function createExamWithQuestions({ classId, title, questions, durationMinutes }) {
   // Crear examen
   const examRes = await run(
-    `INSERT INTO exams (class_id, title) VALUES (?, ?)`,
-    [classId, title]
+    `INSERT INTO exams (class_id, title, duration_minutes) VALUES (?, ?, ?)`,
+    [classId, title, durationMinutes || 60]
   );
   const examId = examRes.lastID;
 
@@ -86,6 +86,7 @@ async function getExamWithQuestionsById(examId) {
     id: exam.id,
     class_id: exam.class_id,
     title: exam.title,
+    durationMinutes: exam.duration_minutes,
     questions: questionsWithOptions
   };
 }

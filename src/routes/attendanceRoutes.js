@@ -70,7 +70,7 @@ router.post('/attendance-checks/:checkId/respond', async (req, res) => {
     if (!recognition) {
       return res.status(401).json({ error: 'No se detectó rostro o no se reconoció el alumno.' });
     }
-
+    //similitud mayor al 80% es ok, mayor al 60% es dudoso, menor es fallido
     const { subject, similarity, raw } = recognition;
     const status = similarity >= 0.8 ? 'ok' : similarity >= 0.6 ? 'dudoso' : 'fallido';
 

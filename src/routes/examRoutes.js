@@ -101,7 +101,7 @@ router.post('/face-login', async (req, res) => {
     console.error('Mensaje:', err.message);
     console.error('Stack:', err.stack);
 
-    if (err.response){
+    if (err.response) {
       console.error('Response data:', err.response.data);
       console.error('Response status:', err.response.status);
     }
@@ -118,6 +118,14 @@ router.post('/face-login', async (req, res) => {
  * POST /api/exam-sessions/:examId/submit
  * Body: { examAttemptId, answers: [{ questionId, optionId }, ...] }
  */
+const examRepo = require('../repositories/examRepository');
+
+// ... (existing imports)
+
+/**
+ * POST /api/exam-sessions/:examId/submit
+ * Body: { examAttemptId, answers: [{ questionId, optionId }, ...] }
+ */
 router.post('/exam-sessions/:examId/submit', async (req, res) => {
   try {
     const { examId } = req.params;
@@ -129,12 +137,107 @@ router.post('/exam-sessions/:examId/submit', async (req, res) => {
 
     await answerRepo.saveStudentAnswers(examAttemptId, answers);
 
-    // MVP: aún no calculas score aquí
-    res.json({ success: true });
+    // Calcular puntaje
+    const exam = await examRepo.getExamWithQuestionsById(examId);
+    if (!exam) {
+      return res.status(404).json({ error: 'Examen no encontrado.' });
+    }
+
+    let correctCount = 0;
+    const totalQuestions = exam.questions.length;
+
+    // Mapa de respuestas correctas: questionId -> optionId (de la correcta)
+    // Ojo: puede haber varias correctas, pero asumimos una por ahora o verificamos si la elegida es correcta.
+    // En el repo, options tiene "correct: true/false".
+
+    for (const ans of answers) {
+      const question = exam.questions.find(q => q.id === parseInt(ans.questionId));
+      if (question) {
+        const selectedOption = question.options.find(o => o.id === parseInt(ans.optionId));
+        if (selectedOption && selectedOption.correct) {
+          correctCount++;
+        }
+      }
+    }
+
+    // Puntaje simple: 10 puntos por correcta
+    const score = correctCount * 10;
+
+    await attendanceRepo.updateExamAttemptScore(examAttemptId, score);
+
+    res.json({
+      success: true,
+      score,
+      correctCount,
+      totalQuestions
+    });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error guardando respuestas del examen.' });
+  }
+});
+
+/**
+ * GET /api/exams/:examId/leaderboard
+ */
+router.get('/exams/:examId/leaderboard', async (req, res) => {
+  try {
+    const { examId } = req.params;
+    // Necesitamos una consulta que una exam_attempts con students
+    // Asumimos que exam_attempts tiene class_id, pero no exam_id directo (en este esquema MVP).
+    // PERO, espera. exam_attempts se crea al hacer login facial.
+    // El examen se asocia a la clase.
+    // Un intento de examen es para una clase.
+    // Si hay múltiples exámenes en una clase, ¿cómo sabemos cuál está tomando?
+    // En el esquema actual:
+    // exams -> class_id
+    // exam_attempts -> class_id
+    // student_answers -> exam_attempt_id, question_id
+    // questions -> exam_id
+    //
+    // Para saber el score de un examen específico, miramos los attempts de esa clase
+    // que tengan respuestas para ese examen.
+    // O simplificamos asumiendo que el "exam_score" en exam_attempts corresponde al último examen tomado.
+    //
+    // Mejor query:
+    // Buscar attempts de la clase del examen.
+    // Filtrar aquellos que tengan score (ya rindieron).
+    // Ordenar por score DESC.
+
+    const exam = await examRepo.getExamWithQuestionsById(examId);
+    if (!exam) {
+      return res.status(404).json({ error: 'Examen no encontrado.' });
+    }
+
+    // Consulta raw para leaderboard
+    // Ojo: esto traerá todos los attempts de la clase, incluso de otros exámenes si hubiera.
+    // Para MVP asumimos un examen activo por clase o que el score se sobreescribe.
+    // Idealmente exam_attempts debería tener exam_id, pero schema.sql no lo tiene.
+    // Vamos a filtrar por class_id y que tengan score.
+
+    const { db } = require('../db'); // Importar db para consulta directa si no hay repo method
+    // Usaremos una query directa aquí por simplicidad, o agregamos al repo.
+    // Agreguemos al repo mejor? No, hagámoslo aquí con db.all (importando db helper)
+    const { all } = require('../db');
+
+    const rows = await all(`
+      SELECT
+        s.full_name,
+        ea.exam_score,
+        ea.started_at
+      FROM exam_attempts ea
+      JOIN students s ON s.id = ea.student_id
+      WHERE ea.class_id = ?
+        AND ea.exam_score IS NOT NULL
+      ORDER BY ea.exam_score DESC, ea.started_at ASC
+    `, [exam.class_id]);
+
+    res.json(rows);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error obteniendo leaderboard.' });
   }
 });
 

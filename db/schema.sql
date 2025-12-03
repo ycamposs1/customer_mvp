@@ -36,7 +36,9 @@ CREATE TABLE IF NOT EXISTS exam_attempts (
   started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   face_verified_at DATETIME,
   verification_score REAL,
+  exam_score REAL,
   verification_status TEXT,
+
   client_ip TEXT,
   user_agent TEXT,
   FOREIGN KEY (class_id) REFERENCES classes(id),
@@ -73,6 +75,7 @@ CREATE TABLE IF NOT EXISTS exams (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   class_id INTEGER NOT NULL,
   title TEXT NOT NULL,
+  duration_minutes INTEGER DEFAULT 60,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (class_id) REFERENCES classes(id)
 );
