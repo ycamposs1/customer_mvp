@@ -1,3 +1,4 @@
+// src/config.js
 require('dotenv').config();
 
 module.exports = {
@@ -6,6 +7,7 @@ module.exports = {
   compreface: {
     baseUrl: process.env.COMPREFACE_BASE_URL || 'http://localhost:8000',
     recognitionServiceId: process.env.COMPREFACE_RECOGNITION_SERVICE_ID,
-    apiKey: process.env.COMPREFACE_API_KEY
+    apiKey: process.env.COMPREFACE_API_KEY,
+    verifySSL: process.env.COMPREFACE_VERIFY_SSL !== 'false'
   }
 };
