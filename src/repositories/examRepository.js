@@ -77,8 +77,8 @@ async function getExamWithQuestionsById(examId) {
       .filter(o => o.question_id === q.id)
       .map(o => ({
         id: o.id,
-        text: o.text
-        // no mandamos is_correct al alumno 👀
+        text: o.text,
+        correct: !!o.is_correct
       }))
   }));
 

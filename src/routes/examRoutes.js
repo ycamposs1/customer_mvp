@@ -7,6 +7,32 @@ const studentRepo = require('../repositories/studentRepository');
 const classRepo = require('../repositories/classRepository');
 const attendanceRepo = require('../repositories/attendanceRepository');
 
+const answerRepo = require('../repositories/answerRepository');
+
+const { createExam } = require('../controllers/examController');
+
+/**
+ * POST /api/exams
+ * Body: { classId, title, questions: [ { text, options: [{ text, correct }] } ] }
+ *
+ * Ejemplo de body:
+ * {
+ *   "classId": 1,
+ *   "title": "Examen 1",
+ *   "questions": [
+ *     {
+ *       "text": "¿Capital de Perú?",
+ *       "options": [
+ *         { "text": "Lima", "correct": true },
+ *         { "text": "Cusco", "correct": false },
+ *         { "text": "Arequipa", "correct": false }
+ *       ]
+ *     }
+ *   ]
+ * }
+ */
+router.post('/exams', createExam);
+
 /**
  * POST /api/face-login
  * Body: { imageBase64, classId }
@@ -36,7 +62,6 @@ router.post('/face-login', async (req, res) => {
     // 3. Buscar alumno por subject, si no existe lo creamos
     let student = await studentRepo.findByComprefaceSubject(subject);
     if (!student) {
-      // puedes pulir esto para separar nombre/apellidos si quieres
       student = await studentRepo.createStudent({
         fullName: subject,
         email: null,
@@ -72,13 +97,20 @@ router.post('/face-login', async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error interno en la verificación facial.' });
+    console.error('Error en /api/face-login:');
+    console.error('Mensaje:', err.message);
+    console.error('Stack:', err.stack);
+
+    if (err.response){
+      console.error('Response data:', err.response.data);
+      console.error('Response status:', err.response.status);
+    }
+    res.status(500).json({ error: 'Error interno en el login facial.' });
+
+
+    //res.status(500).json({ error: 'Error interno en la verificación facial.' });
   }
 });
-
-//guardar respuestas de examen
-const answerRepo = require('../repositories/answerRepository');
 
 /**
  * POST /api/exam-sessions/:examId/submit
@@ -95,7 +127,7 @@ router.post('/exam-sessions/:examId/submit', async (req, res) => {
 
     await answerRepo.saveStudentAnswers(examAttemptId, answers);
 
-    // MVP: no calculamos score todavía (podrías añadirlo después)
+    // MVP: aún no calculas score aquí
     res.json({ success: true });
 
   } catch (err) {
@@ -103,6 +135,5 @@ router.post('/exam-sessions/:examId/submit', async (req, res) => {
     res.status(500).json({ error: 'Error guardando respuestas del examen.' });
   }
 });
-
 
 module.exports = router;

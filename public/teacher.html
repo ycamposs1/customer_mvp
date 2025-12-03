@@ -46,7 +46,7 @@
             Dashboard
           </h1>
           <p class="text-base font-normal leading-normal text-[#4c739a] dark:text-slate-400">
-            Crear codigo, marca asistencia y genera reportes en un mismo lugar.
+            Crear examen, marcar asistencia y generar reportes en un mismo lugar.
           </p>
         </div>
       </div>
@@ -73,7 +73,7 @@
             </label>
 
             <label class="flex flex-col w-full">
-              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">Titulo de Examen</p>
+              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">Título de Examen</p>
               <input
                 id="examTitle"
                 class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 h-12 p-3 text-base font-normal leading-normal"
@@ -81,38 +81,28 @@
               />
             </label>
 
-            <label class="flex flex-col w-full">
-              <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">
-                Preguntas <span class="text-xs text-[#4c739a] dark:text-slate-400">(JSON)</span>
-              </p>
-              <textarea
-                id="questionsJson"
-                class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#0d141b] dark:text-slate-200 placeholder:text-[#4c739a] dark:placeholder:text-slate-500 focus:outline-0 focus:ring-2 focus:ring-primary/50 min-h-36 p-3 text-xs font-mono leading-normal"
-                placeholder='Coloca aquí el JSON de tus preguntas...'
-              ></textarea>
-            </label>
+            <!-- NUEVO: Builder visual de preguntas -->
+            <div class="flex flex-col w-full gap-2">
+              <div class="flex items-center justify-between">
+                <p class="text-base font-medium leading-normal pb-2 dark:text-slate-300">
+                  Preguntas
+                </p>
+                <button
+                  id="btnAddQuestion"
+                  type="button"
+                  class="flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-medium text-[#0d141b] dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                  <span class="material-symbols-outlined text-sm">add</span>
+                  Agregar pregunta
+                </button>
+              </div>
 
-            <!-- Ejemplo JSON (colapsable) -->
-            <div id="jsonExample" class="hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 p-3">
-              <p class="text-sm font-medium mb-2 text-[#0d141b] dark:text-slate-200">Ejemplo JSON:</p>
-              <pre class="text-xs text-[#4c739a] dark:text-slate-300 overflow-auto">
-[
-  {
-    "text": "¿Capital de Perú?",
-    "options": [
-      { "text": "Lima", "correct": true },
-      { "text": "Cusco", "correct": false },
-      { "text": "Arequipa", "correct": false }
-    ]
-  },
-  {
-    "text": "2 + 2 = ?",
-    "options": [
-      { "text": "3", "correct": false },
-      { "text": "4", "correct": true }
-    ]
-  }
-]</pre>
+              <div id="questionsContainer" class="flex flex-col gap-3">
+                <!-- Las preguntas se insertan dinámicamente aquí -->
+              </div>
+
+              <p class="text-xs text-[#4c739a] dark:text-slate-400 mt-1">
+                Cada pregunta debe tener al menos 2 opciones y una marcada como correcta.
+              </p>
             </div>
 
             <div class="flex flex-col mt-2 gap-3">
@@ -122,19 +112,13 @@
                 Generar Código
               </button>
 
-              <!-- Barra de estado + botón de ejemplo JSON -->
+              <!-- Barra de estado -->
               <div class="flex flex-col gap-2">
                 <div class="flex items-center justify-between rounded-lg bg-background-light dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 h-12">
                   <p id="codeInfo" class="text-sm text-[#4c739a] dark:text-slate-400 truncate">
                     Aún no se ha generado un código.
                   </p>
                 </div>
-                <button
-                  id="btnShowExample"
-                  class="flex items-center justify-center gap-2 w-full h-10 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-medium text-[#0d141b] dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                  <span class="material-symbols-outlined text-base">code</span>
-                  Ver ejemplo JSON
-                </button>
               </div>
             </div>
           </div>
@@ -191,7 +175,7 @@
               <div
                 id="reportOutput"
                 class="flex-grow p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-800 text-[#4c739a] dark:text-slate-400 text-xs overflow-auto whitespace-pre-wrap">
-                tu reporte sera mostrado una vez se haya geenrado.
+                Tu reporte será mostrado una vez se haya generado.
               </div>
             </div>
           </div>
@@ -203,15 +187,13 @@
 </div>
 
 <script>
-  // Referencias a elementos
+  // ---------------------------
+  // Referencias generales
+  // ---------------------------
   const classNameInput = document.getElementById('className');
   const examTitleInput = document.getElementById('examTitle');
-  const questionsJsonInput = document.getElementById('questionsJson');
   const codeInfo = document.getElementById('codeInfo');
   const btnGenerateCode = document.getElementById('btnGenerateCode');
-
-  const btnShowExample = document.getElementById('btnShowExample');
-  const jsonExample = document.getElementById('jsonExample');
 
   const teacherNameInput = document.getElementById('teacherName');
   const btnCheck = document.getElementById('btnCheck');
@@ -220,39 +202,206 @@
   const btnReport = document.getElementById('btnReport');
   const reportOutput = document.getElementById('reportOutput');
 
+  const questionsContainer = document.getElementById('questionsContainer');
+  const btnAddQuestion = document.getElementById('btnAddQuestion');
+
   let currentClassId = null;
   let currentCode = null;
 
-  // Botón: Ver ejemplo JSON (toggle)
-  btnShowExample.addEventListener('click', () => {
-    const isHidden = jsonExample.classList.contains('hidden');
-    if (isHidden) {
-      jsonExample.classList.remove('hidden');
-      btnShowExample.textContent = 'Ocultar ejemplo JSON';
-    } else {
-      jsonExample.classList.add('hidden');
-      btnShowExample.innerHTML = '<span class="material-symbols-outlined text-base">code</span> Ver ejemplo JSON';
+  // ---------------------------
+  // Helper: crear bloque de pregunta
+  // ---------------------------
+  function createQuestionBlock(initial = false) {
+    const qId = 'q_' + Math.random().toString(16).slice(2);
+    const index = questionsContainer.children.length + 1;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'question-block rounded-lg border border-slate-200 dark:border-slate-700 bg-background-light dark:bg-slate-900/60 p-3 flex flex-col gap-2';
+    wrapper.dataset.qid = qId;
+
+    wrapper.innerHTML = `
+      <div class="flex items-center justify-between mb-1">
+        <h3 class="text-sm font-semibold text-[#0d141b] dark:text-slate-100">
+          Pregunta <span class="question-index">${index}</span>
+        </h3>
+        <button
+          type="button"
+          class="btn-delete-question text-xs text-red-600 dark:text-red-400 hover:underline ${initial ? 'hidden' : ''}">
+          Eliminar
+        </button>
+      </div>
+      <input
+        type="text"
+        class="question-text form-input w-full rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-slate-800 text-sm px-3 py-2 mb-2"
+        placeholder="Escribe el texto de la pregunta..."
+      />
+      <div class="flex flex-col gap-1">
+        <p class="text-xs font-medium text-[#4c739a] dark:text-slate-400 mb-1">
+          Opciones (marca la correcta)
+        </p>
+        <div class="options-container flex flex-col gap-1"></div>
+        <button
+          type="button"
+          class="btn-add-option mt-1 text-xs text-primary hover:underline self-start flex items-center gap-1">
+          <span class="material-symbols-outlined text-xs">add</span>Agregar opción
+        </button>
+      </div>
+    `;
+
+    const optionsContainer = wrapper.querySelector('.options-container');
+    const btnAddOptionEl = wrapper.querySelector('.btn-add-option');
+    const btnDeleteQuestionEl = wrapper.querySelector('.btn-delete-question');
+
+    // Función para crear una fila de opción
+    function addOptionRow(setCorrect = false) {
+      const row = document.createElement('div');
+      row.className = 'option-row flex items-center gap-2';
+
+      row.innerHTML = `
+        <input
+          type="radio"
+          name="correct-${qId}"
+          class="option-correct h-4 w-4 text-primary border-slate-300"
+        />
+        <input
+          type="text"
+          class="option-text flex-1 form-input rounded-lg border border-[#cfdbe7] dark:border-slate-700 bg-white dark:bg-slate-800 text-xs px-3 py-2"
+          placeholder="Texto de la opción"
+        />
+        <button
+          type="button"
+          class="btn-delete-option text-[11px] text-slate-500 hover:text-red-500">
+          X
+        </button>
+      `;
+
+      const radio = row.querySelector('.option-correct');
+      if (setCorrect) {
+        radio.checked = true;
+      }
+
+      const btnDeleteOption = row.querySelector('.btn-delete-option');
+      btnDeleteOption.addEventListener('click', () => {
+        const rows = optionsContainer.querySelectorAll('.option-row');
+        if (rows.length > 2) {
+          row.remove();
+        }
+      });
+
+      optionsContainer.appendChild(row);
     }
+
+    // Agregamos dos opciones por defecto
+    addOptionRow(true);  // la primera marcada como correcta
+    addOptionRow(false);
+
+    btnAddOptionEl.addEventListener('click', () => addOptionRow(false));
+
+    if (!initial) {
+      btnDeleteQuestionEl.addEventListener('click', () => {
+        wrapper.remove();
+        // Recalcular índices visuales
+        const all = questionsContainer.querySelectorAll('.question-block');
+        all.forEach((qb, idx) => {
+          const spanIndex = qb.querySelector('.question-index');
+          if (spanIndex) spanIndex.textContent = idx + 1;
+        });
+      });
+    }
+
+    return wrapper;
+  }
+
+  // Inicializar con UNA pregunta
+  questionsContainer.appendChild(createQuestionBlock(true));
+
+  // Botón agregar pregunta
+  btnAddQuestion.addEventListener('click', () => {
+    const block = createQuestionBlock(false);
+    questionsContainer.appendChild(block);
   });
 
+  // ---------------------------
   // Generar examen + código (llama a /api/exams/create-session)
+  // ---------------------------
   btnGenerateCode.addEventListener('click', async () => {
     const name = classNameInput.value.trim();
     const examTitle = examTitleInput.value.trim();
-    const questionsJson = questionsJsonInput.value.trim();
 
-    if (!examTitle || !questionsJson) {
-      codeInfo.textContent = 'Debes ingresar título del examen y preguntas en JSON.';
+    if (!examTitle) {
+      codeInfo.textContent = 'Debes ingresar título del examen.';
       codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
       return;
+    }
+
+    const questionBlocks = questionsContainer.querySelectorAll('.question-block');
+    if (questionBlocks.length === 0) {
+      codeInfo.textContent = 'Debes agregar al menos una pregunta.';
+      codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
+      return;
+    }
+
+    const questions = [];
+    for (const block of questionBlocks) {
+      const questionTextInput = block.querySelector('.question-text');
+      const optionsRows = block.querySelectorAll('.option-row');
+
+      const qText = questionTextInput.value.trim();
+      if (!qText) {
+        codeInfo.textContent = 'Todas las preguntas deben tener texto.';
+        codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
+        return;
+      }
+
+      if (optionsRows.length < 2) {
+        codeInfo.textContent = 'Cada pregunta debe tener al menos 2 opciones.';
+        codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
+        return;
+      }
+
+      const options = [];
+      let hasCorrect = false;
+
+      optionsRows.forEach(row => {
+        const optTextInput = row.querySelector('.option-text');
+        const optRadio = row.querySelector('.option-correct');
+
+        const text = optTextInput.value.trim();
+        if (!text) return; // ignorar opciones vacías
+
+        const correct = optRadio.checked;
+        if (correct) hasCorrect = true;
+
+        options.push({ text, correct });
+      });
+
+      if (options.length < 2) {
+        codeInfo.textContent = 'Cada pregunta debe tener al menos 2 opciones con texto.';
+        codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
+        return;
+      }
+
+      if (!hasCorrect) {
+        codeInfo.textContent = 'Cada pregunta debe tener una opción marcada como correcta.';
+        codeInfo.className = 'text-sm text-red-600 dark:text-red-400';
+        return;
+      }
+
+      questions.push({ text: qText, options });
     }
 
     try {
       const resp = await fetch('/api/exams/create-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, examTitle, questionsJson })
+        body: JSON.stringify({
+          name,
+          examTitle,
+          // Aquí enviamos el JSON generado para que el backend siga igual
+          questionsJson: JSON.stringify(questions)
+        })
       });
+
       const data = await resp.json();
       if (!resp.ok || !data.success) {
         codeInfo.textContent = data.error || 'Error generando examen y código.';
@@ -274,7 +423,9 @@
     }
   });
 
-  // Verificación de asistencia (llama a /api/classes/:classId/attendance-checks)
+  // ---------------------------
+  // Verificación de asistencia
+  // ---------------------------
   btnCheck.addEventListener('click', async () => {
     if (!currentClassId) {
       checkStatus.innerHTML =
@@ -315,7 +466,9 @@
     }
   });
 
-  // Reporte de la clase (llama a /api/classes/:classId/report)
+  // ---------------------------
+  // Reporte de la clase
+  // ---------------------------
   btnReport.addEventListener('click', async () => {
     if (!currentClassId) {
       reportOutput.textContent = 'Primero genera un examen y código.';

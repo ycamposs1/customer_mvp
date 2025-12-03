@@ -18,6 +18,8 @@ app.use(bodyParser.json({ limit: '10mb' }));
 
 // Front estático
 app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use('/api/exams', examRoutes);
+
 
 // API
 app.use('/api', examRoutes);
@@ -38,13 +40,8 @@ app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
 
-// Ruta para creación de sesión de examen
-//const examSessionRoutes = require('./routes/examSessionRoutes');
-
-// ...
-
 app.use('/api', examRoutes);
 app.use('/api', attendanceRoutes);
-app.use('/api', classRoutes);        // si aún lo estás usando
-app.use('/api', examSessionRoutes);  // <- añade esto
+app.use('/api', classRoutes);        
+app.use('/api', examSessionRoutes);  
 

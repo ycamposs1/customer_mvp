@@ -4,3 +4,4 @@
 *.sql
 *.sqlite
 dv/schema.sql
+node_modules/
